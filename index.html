@@ -149,7 +149,7 @@
 </div>
 
 <script>
-    // ⚠️ IMPORTANT: REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+    // ⚠️ IMPORTANT: YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtRpcMrLmXjscGPP0td2wudXNAt3t9n53SEYQY7kdnpICgl5LSlp5XhMafHmiTlkrD/exec';
     let availableDates = []; // Global array to store dates for selected engineer
 
@@ -157,7 +157,9 @@
 
     function getNextAvailableDay(days) {
         let today = new Date();
-        today.setDate(today.getDate() + days); // Start check from a week in the future
+        today.setDate(today.getDate() + days); // Start check from a week (7 days) in the future
+        // Reset time component to prevent time zone issues
+        today.setHours(0, 0, 0, 0); 
         return today;
     }
 
@@ -208,6 +210,7 @@
     // ** 1. Fetch all jobs to count bookings by date/location **
     async function fetchJobs() {
         showLoading(true);
+        // Using the deployed URL
         const url = `${APPS_SCRIPT_URL}?action=getJobs`;
         try {
             const response = await fetch(url);
@@ -240,12 +243,19 @@
 
         const allJobs = await fetchJobs();
 
-        // 💡 Logic: The script should check for a max of 5 jobs per day/location.
+        // Object to hold counts: { 'YYYY-MM-DD': count }
         const bookingsCount = {};
         
         allJobs.forEach(job => {
+            // Check if the job's Engineer (Column N) matches the selected location
+            // and if the date components are valid (Columns J, K, L)
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
-                const dateKey = `${job.Year}-${job.Month.toString().padStart(2, '0')}-${job.Day.toString().padStart(2, '0')}`;
+                // Ensure date components are numbers and format the date string correctly
+                const day = String(job.Day).padStart(2, '0');
+                const month = String(job.Month).padStart(2, '0');
+                const year = String(job.Year);
+
+                const dateKey = `${year}-${month}-${day}`;
                 bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
             }
         });
@@ -286,6 +296,7 @@
                 nextButton.disabled = !dateSelect.value;
             };
         }
+        showLoading(false); // Make sure to hide loading after date calculation
     }
     
     // ** 3. Submit the booking to the Apps Script **
@@ -349,6 +360,6 @@
         }
     }
 </script>
-
+    
 </body>
 </html>
