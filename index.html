@@ -165,7 +165,7 @@
 
     function formatDateForAppsScript(date) {
         const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
         const dd = String(date.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`; // Format YYYY-MM-DD
     }
@@ -250,12 +250,22 @@
             // Check if the job's Engineer (Column N) matches the selected location
             // and if the date components are valid (Columns J, K, L)
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
-                // Ensure date components are numbers and format the date string correctly
-                const day = String(job.Day).padStart(2, '0');
-                const month = String(job.Month).padStart(2, '0');
-                const year = String(job.Year);
+                
+                // CRITICAL FIX: Google Sheets month number (1-12) must be adjusted for 
+                // JavaScript's zero-indexed Date object (0-11).
+                const jsMonth = Number(job.Month) - 1; 
+
+                // Create a clean Date object for reliable formatting
+                const jobDate = new Date(Number(job.Year), jsMonth, Number(job.Day));
+                
+                // Format the Date object into the consistent YYYY-MM-DD string key
+                const year = jobDate.getFullYear();
+                const month = String(jobDate.getMonth() + 1).padStart(2, '0');
+                const day = String(jobDate.getDate()).padStart(2, '0');
 
                 const dateKey = `${year}-${month}-${day}`;
+                
+                // Increment the count for this specific date and location
                 bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
             }
         });
