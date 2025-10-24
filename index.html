@@ -248,15 +248,9 @@
         
         allJobs.forEach(job => {
             // Check if the job's Engineer (Column N) matches the selected location
-            // and if the date components are valid (Columns J, K, L)
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
                 
-                // CRITICAL FIX: The Google Sheet month number (1-12) MUST be adjusted for 
-                // JavaScript's zero-indexed Date object (0-11) when creating a Date object.
-                // However, since we are just trying to build a consistent KEY, 
-                // we can just pad the numbers to ensure the format is YYYY-MM-DD.
-                
-                // Ensure values are treated as numbers, then pad them to 2 digits
+                // Ensure values are treated as strings and padded to 2 digits for consistency.
                 const day = String(job.Day).padStart(2, '0');
                 const month = String(job.Month).padStart(2, '0');
                 const year = String(job.Year);
@@ -277,7 +271,16 @@
         let datesFound = 0;
 
         // Check for the next 30 days
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 60; i++) { // Loop longer (e.g., 60 days) to ensure we find 30 valid working days
+            
+            const dayOfWeek = currentDate.getDay(); // 0 for Sunday, 6 for Saturday
+
+            // 🛑 NEW CHECK: Skip weekends
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+                continue; // Skip the rest of the loop for this date
+            }
+
             const dateKey = formatDateForAppsScript(currentDate);
             const displayDate = formatDisplayDate(currentDate);
             const count = bookingsCount[dateKey] || 0;
@@ -292,10 +295,15 @@
             }
 
             currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+            
+            // Optional: Break if we've found enough dates
+            if (datesFound >= 30) {
+                break;
+            }
         }
 
         if (datesFound === 0) {
-            dateMessageDiv.textContent = 'Sorry, there are no available slots in the next 30 days for this area.';
+            dateMessageDiv.textContent = 'Sorry, there are no available slots in the next month for this area.';
             dateMessageDiv.style.display = 'block';
             dateSelectContainer.style.display = 'none';
         } else {
