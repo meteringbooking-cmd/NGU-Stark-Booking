@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Appointment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"], input[type="email"], input[type="tel"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't affect total width */
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Book Your Appointment</h1>
+
+    <div id="bookingForm">
+        <div id="step1" class="form-section active">
+            <label for="location">1. Select Service Area:</label>
+            <select id="location" onchange="fetchAvailableDates()">
+                <option value="" disabled selected>-- Select Area --</option>
+                <option value="North East">North East</option>
+                <option value="North West">North West</option>
+                <option value="Midlands">Midlands</option>
+                <option value="Eastern">Eastern</option>
+                <option value="South East">South East</option>
+                <option value="South West">South West</option>
+                <option value="London">London</option>
+                <option value="Wales">Wales</option>
+            </select>
+            <div id="dateSelectContainer" style="display:none;">
+                <label for="appointmentDate">2. Select an Available Date:</label>
+                <select id="appointmentDate">
+                    <option value="" disabled selected>-- Loading dates... --</option>
+                </select>
+            </div>
+            <div id="dateMessage" class="message error" style="display:none;"></div>
+            <button onclick="nextStep(2)" id="nextStep2" disabled>Next</button>
+        </div>
+
+        <div id="step2" class="form-section">
+            <label for="contactName">Contact Name (Column D):</label>
+            <input type="text" id="contactName" required>
+
+            <label for="contactNumber">Contact Number (Column E):</label>
+            <input type="tel" id="contactNumber" required>
+
+            <label for="contactEmail">Contact Email (Column F):</label>
+            <input type="email" id="contactEmail" required>
+
+            <label for="siteName">Site Name (Column G):</label>
+            <input type="text" id="siteName" required>
+
+            <label for="address">Address (Column H):</label>
+            <input type="text" id="address" required>
+
+            <label for="postcode">Postcode (Column I):</label>
+            <input type="text" id="postcode" required>
+            
+            <label for="timeSlot">Appointment Slot (Column M):</label>
+            <select id="timeSlot" required>
+                <option value="" disabled selected>-- Select Time Slot --</option>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+
+            <button onclick="submitBooking()">Book Appointment</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+        Processing request...
+    </div>
+
+    <div id="statusMessage" class="message" style="display:none;"></div>
+
+</div>
+
+<script>
+    // ⚠️ IMPORTANT: REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtRpcMrLmXjscGPP0td2wudXNAt3t9n53SEYQY7kdnpICgl5LSlp5XhMafHmiTlkrD/exec';
+    let availableDates = []; // Global array to store dates for selected engineer
+
+    // --- Helper Functions ---
+
+    function getNextAvailableDay(days) {
+        let today = new Date();
+        today.setDate(today.getDate() + days); // Start check from a week in the future
+        return today;
+    }
+
+    function formatDateForAppsScript(date) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`; // Format YYYY-MM-DD
+    }
+
+    function formatDisplayDate(date) {
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-GB', options);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        document.getElementById('bookingForm').style.display = show ? 'none' : 'block';
+        document.getElementById('statusMessage').style.display = 'none';
+    }
+
+    function displayMessage(type, text) {
+        const messageDiv = document.getElementById('statusMessage');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = text;
+        messageDiv.style.display = 'block';
+    }
+
+    function nextStep(step) {
+        if (step === 2) {
+            const dateSelect = document.getElementById('appointmentDate');
+            if (!document.getElementById('location').value || !dateSelect.value) {
+                displayMessage('error', 'Please select a service area and an appointment date.');
+                return;
+            }
+        }
+
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(`step${step}`).classList.add('active');
+        document.getElementById('statusMessage').style.display = 'none';
+    }
+
+
+    // --- Core Logic ---
+
+    // ** 1. Fetch all jobs to count bookings by date/location **
+    async function fetchJobs() {
+        showLoading(true);
+        const url = `${APPS_SCRIPT_URL}?action=getJobs`;
+        try {
+            const response = await fetch(url);
+            const jobs = await response.json();
+            showLoading(false);
+            return jobs;
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+            displayMessage('error', 'Failed to load booking data. Please try refreshing the page.');
+            showLoading(false);
+            return [];
+        }
+    }
+
+    // ** 2. Determine available dates for the selected location **
+    async function fetchAvailableDates() {
+        const location = document.getElementById('location').value;
+        const dateSelectContainer = document.getElementById('dateSelectContainer');
+        const dateSelect = document.getElementById('appointmentDate');
+        const dateMessageDiv = document.getElementById('dateMessage');
+        const nextButton = document.getElementById('nextStep2');
+        
+        // Reset state
+        dateSelect.innerHTML = '<option value="" disabled selected>-- Loading dates... --</option>';
+        dateSelectContainer.style.display = 'block';
+        dateMessageDiv.style.display = 'none';
+        nextButton.disabled = true;
+
+        if (!location) return;
+
+        const allJobs = await fetchJobs();
+
+        // 💡 Logic: The script should check for a max of 5 jobs per day/location.
+        const bookingsCount = {};
+        
+        allJobs.forEach(job => {
+            if (job.Engineer === location && job.Day && job.Month && job.Year) {
+                const dateKey = `${job.Year}-${job.Month.toString().padStart(2, '0')}-${job.Day.toString().padStart(2, '0')}`;
+                bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+            }
+        });
+
+        // Clear existing options
+        dateSelect.innerHTML = '<option value="" disabled selected>-- Select Date --</option>';
+        availableDates = [];
+
+        const maxBookingsPerDay = 5;
+        let currentDate = getNextAvailableDay(7); // Start 7 days from now
+        let datesFound = 0;
+
+        // Check for the next 30 days
+        for (let i = 0; i < 30; i++) {
+            const dateKey = formatDateForAppsScript(currentDate);
+            const displayDate = formatDisplayDate(currentDate);
+            const count = bookingsCount[dateKey] || 0;
+
+            if (count < maxBookingsPerDay) {
+                const option = document.createElement('option');
+                option.value = dateKey;
+                option.textContent = `${displayDate} (${maxBookingsPerDay - count} slots left)`;
+                dateSelect.appendChild(option);
+                availableDates.push(dateKey);
+                datesFound++;
+            }
+
+            currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+        }
+
+        if (datesFound === 0) {
+            dateMessageDiv.textContent = 'Sorry, there are no available slots in the next 30 days for this area.';
+            dateMessageDiv.style.display = 'block';
+            dateSelectContainer.style.display = 'none';
+        } else {
+            // Enable the next button once dates are loaded and a date is selected
+            dateSelect.onchange = () => {
+                nextButton.disabled = !dateSelect.value;
+            };
+        }
+    }
+    
+    // ** 3. Submit the booking to the Apps Script **
+    async function submitBooking() {
+        const contactName = document.getElementById('contactName').value;
+        const contactNumber = document.getElementById('contactNumber').value;
+        const contactEmail = document.getElementById('contactEmail').value;
+        const siteName = document.getElementById('siteName').value;
+        const address = document.getElementById('address').value;
+        const postcode = document.getElementById('postcode').value;
+        const date = document.getElementById('appointmentDate').value; // YYYY-MM-DD
+        const timeSlot = document.getElementById('timeSlot').value;
+        const location = document.getElementById('location').value;
+
+        if (!contactName || !contactNumber || !contactEmail || !siteName || !address || !postcode || !date || !timeSlot || !location) {
+            displayMessage('error', 'Please fill in all required fields.');
+            return;
+        }
+
+        showLoading(true);
+
+        const payload = {
+            action: 'addJob',
+            data: {
+                ContactName: contactName,
+                ContactNumber: contactNumber,
+                ContactEmail: contactEmail,
+                Site: siteName,
+                Address: address,
+                Postcode: postcode,
+                Date: date,
+                Time: timeSlot,
+                Engineer: location // Using the location as the Engineer for simple assignment
+            }
+        };
+
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8', // Required for Google Apps Script doPost
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            showLoading(false);
+            
+            if (result.success) {
+                document.getElementById('bookingForm').style.display = 'none';
+                displayMessage('success', `✅ Appointment Booked! Your reference is **${result.ref}**. You will receive an email confirmation shortly.`);
+            } else {
+                displayMessage('error', 'Booking failed: ' + result.message);
+            }
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            showLoading(false);
+            displayMessage('error', 'An error occurred while submitting your request. Please check your internet connection and try again.');
+        }
+    }
+</script>
+
+</body>
+</html>
