@@ -5,92 +5,269 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Your Appointment</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f9;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .container {
             max-width: 600px;
-            margin: auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
         }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         h1 {
-            color: #007bff;
+            color: #667eea;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 2em;
+            font-weight: 700;
         }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: #ddd;
+        }
+
         label {
             display: block;
-            margin: 15px 0 5px;
-            font-weight: bold;
+            margin: 20px 0 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
         }
-        select, input[type="text"], input[type="email"], input[type="tel"], input[type="date"] {
+
+        select, input[type="text"], input[type="email"], input[type="tel"] {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; /* Ensures padding doesn't affect total width */
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+            color: #333;
         }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select:hover, input:hover {
+            border-color: #667eea;
+        }
+
         button {
-            background-color: #28a745;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 15px;
+            padding: 16px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
             width: 100%;
             font-size: 16px;
-            margin-top: 20px;
+            font-weight: 600;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        button:hover {
-            background-color: #218838;
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
         .form-section {
             display: none;
+            animation: fadeIn 0.4s ease-out;
         }
+
         .form-section.active {
             display: block;
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         .message {
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 4px;
+            padding: 16px 20px;
+            border-radius: 10px;
             text-align: center;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
         }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background-color: #fee;
+            color: #c33;
+            border: 2px solid #fcc;
         }
+
         .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: #efe;
+            color: #2a6d2a;
+            border: 2px solid #cec;
         }
+
         .loading {
             text-align: center;
-            padding: 10px;
+            padding: 40px;
             display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .date-badge {
+            display: inline-block;
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .info-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.6em;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Book Your Appointment</h1>
+    <h1>📅 Book Your Appointment</h1>
+    <p class="subtitle">Schedule your service in just a few steps</p>
+
+    <div class="step-indicator">
+        <div class="step-dot active" id="indicator1"></div>
+        <div class="step-line"></div>
+        <div class="step-dot" id="indicator2"></div>
+    </div>
 
     <div id="bookingForm">
         <div id="step1" class="form-section active">
-            <label for="location">1. Select Service Area:</label>
+            <label for="location">Select Your Service Area</label>
             <select id="location" onchange="fetchAvailableDates()">
-                <option value="" disabled selected>-- Select Area --</option>
+                <option value="" disabled selected>Choose your location...</option>
                 <option value="North East">North East</option>
                 <option value="North West">North West</option>
                 <option value="Midlands">Midlands</option>
@@ -100,78 +277,77 @@
                 <option value="London">London</option>
                 <option value="Wales">Wales</option>
             </select>
+
             <div id="dateSelectContainer" style="display:none;">
-                <label for="appointmentDate">2. Select an Available Date:</label>
+                <label for="appointmentDate">Choose an Available Date</label>
                 <select id="appointmentDate">
-                    <option value="" disabled selected>-- Loading dates... --</option>
+                    <option value="" disabled selected>Loading available dates...</option>
                 </select>
+                <p class="info-text">Showing weekdays only, starting 7 days from today</p>
             </div>
+
             <div id="dateMessage" class="message error" style="display:none;"></div>
-            <button onclick="nextStep(2)" id="nextStep2" disabled>Next</button>
+            <button onclick="nextStep(2)" id="nextStep2" disabled>Continue to Details →</button>
         </div>
 
         <div id="step2" class="form-section">
-            <label for="contactName">Contact Name (Column D):</label>
-            <input type="text" id="contactName" required>
+            <label for="contactName">Contact Name</label>
+            <input type="text" id="contactName" placeholder="Enter your full name" required>
 
-            <label for="contactNumber">Contact Number (Column E):</label>
-            <input type="tel" id="contactNumber" required>
+            <label for="contactNumber">Contact Number</label>
+            <input type="tel" id="contactNumber" placeholder="e.g., 07123 456789" required>
 
-            <label for="contactEmail">Contact Email (Column F):</label>
-            <input type="email" id="contactEmail" required>
+            <label for="contactEmail">Contact Email</label>
+            <input type="email" id="contactEmail" placeholder="you@example.com" required>
 
-            <label for="siteName">Site Name (Column G):</label>
-            <input type="text" id="siteName" required>
+            <label for="siteName">Site Name</label>
+            <input type="text" id="siteName" placeholder="Business or property name" required>
 
-            <label for="address">Address (Column H):</label>
-            <input type="text" id="address" required>
+            <label for="address">Address</label>
+            <input type="text" id="address" placeholder="Street address" required>
 
-            <label for="postcode">Postcode (Column I):</label>
-            <input type="text" id="postcode" required>
+            <label for="postcode">Postcode</label>
+            <input type="text" id="postcode" placeholder="e.g., SW1A 1AA" required>
             
-            <label for="timeSlot">Appointment Slot (Column M):</label>
+            <label for="timeSlot">Preferred Time Slot</label>
             <select id="timeSlot" required>
-                <option value="" disabled selected>-- Select Time Slot --</option>
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
+                <option value="" disabled selected>Choose morning or afternoon</option>
+                <option value="AM">Morning (AM)</option>
+                <option value="PM">Afternoon (PM)</option>
             </select>
 
-            <button onclick="submitBooking()">Book Appointment</button>
+            <button onclick="submitBooking()">Confirm Booking ✓</button>
         </div>
     </div>
 
     <div class="loading" id="loadingIndicator">
-        Processing request...
+        <div class="spinner"></div>
+        <div class="loading-text">Processing your request...</div>
     </div>
 
     <div id="statusMessage" class="message" style="display:none;"></div>
-
 </div>
 
 <script>
-    // ⚠️ IMPORTANT: YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtRpcMrLmXjscGPP0td2wudXNAt3t9n53SEYQY7kdnpICgl5LSlp5XhMafHmiTlkrD/exec';
-    let availableDates = []; // Global array to store dates for selected engineer
-
-    // --- Helper Functions ---
+    let availableDates = [];
 
     function getNextAvailableDay(days) {
         let today = new Date();
-        today.setDate(today.getDate() + days); // Start check from a week (7 days) in the future
-        // Reset time component to prevent time zone issues
+        today.setDate(today.getDate() + days);
         today.setHours(0, 0, 0, 0); 
         return today;
     }
 
     function formatDateForAppsScript(date) {
         const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
         const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`; // Format YYYY-MM-DD
+        return `${yyyy}-${mm}-${dd}`;
     }
 
     function formatDisplayDate(date) {
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         return date.toLocaleDateString('en-GB', options);
     }
 
@@ -184,7 +360,7 @@
     function displayMessage(type, text) {
         const messageDiv = document.getElementById('statusMessage');
         messageDiv.className = `message ${type}`;
-        messageDiv.textContent = text;
+        messageDiv.innerHTML = text;
         messageDiv.style.display = 'block';
     }
 
@@ -192,7 +368,7 @@
         if (step === 2) {
             const dateSelect = document.getElementById('appointmentDate');
             if (!document.getElementById('location').value || !dateSelect.value) {
-                displayMessage('error', 'Please select a service area and an appointment date.');
+                displayMessage('error', 'Please select both a service area and an appointment date.');
                 return;
             }
         }
@@ -201,139 +377,129 @@
             section.classList.remove('active');
         });
         document.getElementById(`step${step}`).classList.add('active');
+        
+        // Update step indicators
+        document.getElementById('indicator1').classList.toggle('active', step === 1);
+        document.getElementById('indicator2').classList.toggle('active', step === 2);
+        
         document.getElementById('statusMessage').style.display = 'none';
     }
 
-
-    // --- Core Logic ---
-
-    // ** 1. Fetch all jobs to count bookings by date/location **
     async function fetchJobs() {
-        showLoading(true);
-        // Using the deployed URL
         const url = `${APPS_SCRIPT_URL}?action=getJobs`;
         try {
             const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
             const jobs = await response.json();
-            showLoading(false);
             return jobs;
         } catch (error) {
             console.error('Error fetching jobs:', error);
-            displayMessage('error', 'Failed to load booking data. Please try refreshing the page.');
-            showLoading(false);
             return [];
         }
     }
 
-    // ** 2. Determine available dates for the selected location **
-    // ** 2. Determine available dates for the selected location **
-async function fetchAvailableDates() {
-    const location = document.getElementById('location').value;
-    const dateSelectContainer = document.getElementById('dateSelectContainer');
-    const dateSelect = document.getElementById('appointmentDate');
-    const dateMessageDiv = document.getElementById('dateMessage');
-    const nextButton = document.getElementById('nextStep2');
-    
-    // Reset state
-    dateSelect.innerHTML = '<option value="" disabled selected>-- Loading dates... --</option>';
-    dateSelectContainer.style.display = 'block';
-    dateMessageDiv.style.display = 'none';
-    nextButton.disabled = true;
-
-    if (!location) return;
-
-    const allJobs = await fetchJobs();
-
-    // Object to hold counts: { 'YYYY-MM-DD': count }
-    const bookingsCount = {};
-    
-    allJobs.forEach(job => {
-        // Check if the job's Engineer (Column N) matches the selected location
-        if (job.Engineer === location && job.Day && job.Month && job.Year) {
-            
-            // 🏆 FINAL FIX: Use Number() to convert job date parts, then re-format (pad) 
-            // them to create a consistent YYYY-MM-DD key. This ensures single-digit 
-            // numbers (like 5) are treated as 05 for the key.
-            try {
-                // Convert to Number, then pad the string representation
-                const day = String(Number(job.Day)).padStart(2, '0');
-                const month = String(Number(job.Month)).padStart(2, '0');
-                const year = String(Number(job.Year));
-
-                // The dateKey MUST be padded for consistency with formatDateForAppsScript
-                const dateKey = `${year}-${month}-${day}`;
-                
-                // Increment the count for this specific date and location
-                bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
-
-            } catch (e) {
-                // Skips jobs if date components are truly unparsable (e.g., "N/A")
-                console.warn("Skipping job due to unparsable date component:", job, e);
-            }
-        }
-    });
-
-    // ... (rest of the date generation logic remains the same) ...
-    // The rest of the logic generates dates in the YYYY-MM-DD format, which will now match
-    // the dateKey created above, regardless of the original format in the sheet.
-    
-    // Clear existing options
-    dateSelect.innerHTML = '<option value="" disabled selected>-- Select Date --</option>';
-    availableDates = [];
-
-    const maxBookingsPerDay = 5;
-    let currentDate = getNextAvailableDay(7); // Start 7 days from now
-    let datesFound = 0;
-
-    // Check for the next 60 days to find 30 working days
-    for (let i = 0; i < 60 && datesFound < 30; i++) { 
+    async function fetchAvailableDates() {
+        const location = document.getElementById('location').value;
+        const dateSelectContainer = document.getElementById('dateSelectContainer');
+        const dateSelect = document.getElementById('appointmentDate');
+        const dateMessageDiv = document.getElementById('dateMessage');
+        const nextButton = document.getElementById('nextStep2');
         
-        const dayOfWeek = currentDate.getDay(); // 0 for Sunday, 6 for Saturday
+        dateSelect.innerHTML = '<option value="" disabled selected>Loading available dates...</option>';
+        dateSelectContainer.style.display = 'block';
+        dateMessageDiv.style.display = 'none';
+        nextButton.disabled = true;
 
-        // 🛑 Exclude weekends
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            currentDate.setDate(currentDate.getDate() + 1); // Move to next day
-            continue; 
+        if (!location) return;
+
+        showLoading(true);
+        const allJobs = await fetchJobs();
+        showLoading(false);
+
+        // FIXED: Count ALL jobs for this location and date, not just web submissions
+        const bookingsCount = {};
+        
+        allJobs.forEach(job => {
+            // Match on Engineer column AND ensure we have valid date components
+            if (job.Engineer === location && job.Day && job.Month && job.Year) {
+                try {
+                    // Normalize date components - handle both string and number inputs
+                    const day = String(Number(job.Day)).padStart(2, '0');
+                    const month = String(Number(job.Month)).padStart(2, '0');
+                    const year = String(Number(job.Year));
+                    
+                    // Skip invalid dates
+                    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+                        return;
+                    }
+
+                    const dateKey = `${year}-${month}-${day}`;
+                    bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+                } catch (e) {
+                    console.warn("Skipping job due to unparsable date:", job, e);
+                }
+            }
+        });
+
+        dateSelect.innerHTML = '<option value="" disabled selected>Select a date...</option>';
+        availableDates = [];
+
+        const maxBookingsPerDay = 5;
+        let currentDate = getNextAvailableDay(7);
+        let datesFound = 0;
+
+        for (let i = 0; i < 60 && datesFound < 30; i++) { 
+            const dayOfWeek = currentDate.getDay();
+
+            // Skip weekends
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                continue; 
+            }
+
+            const dateKey = formatDateForAppsScript(currentDate);
+            const displayDate = formatDisplayDate(currentDate);
+            const count = bookingsCount[dateKey] || 0;
+            const slotsLeft = maxBookingsPerDay - count;
+
+            if (slotsLeft > 0) {
+                const option = document.createElement('option');
+                option.value = dateKey;
+                option.textContent = `${displayDate}`;
+                
+                // Add slots indicator
+                const badge = document.createElement('span');
+                badge.className = 'date-badge';
+                badge.textContent = `${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} left`;
+                
+                option.textContent += ` • ${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} available`;
+                dateSelect.appendChild(option);
+                availableDates.push(dateKey);
+                datesFound++;
+            }
+
+            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        const dateKey = formatDateForAppsScript(currentDate); // Creates YYYY-MM-DD
-        const displayDate = formatDisplayDate(currentDate);
-        const count = bookingsCount[dateKey] || 0;
-
-        if (count < maxBookingsPerDay) {
-            const option = document.createElement('option');
-            option.value = dateKey;
-            option.textContent = `${displayDate} (${maxBookingsPerDay - count} slots left)`;
-            dateSelect.appendChild(option);
-            availableDates.push(dateKey);
-            datesFound++;
+        if (datesFound === 0) {
+            dateMessageDiv.textContent = 'Sorry, there are no available slots in the next month for this area. Please contact us directly.';
+            dateMessageDiv.style.display = 'block';
+            dateSelectContainer.style.display = 'none';
+        } else {
+            dateSelect.onchange = () => {
+                nextButton.disabled = !dateSelect.value;
+            };
         }
-
-        currentDate.setDate(currentDate.getDate() + 1); // Move to next day
     }
-
-    if (datesFound === 0) {
-        dateMessageDiv.textContent = 'Sorry, there are no available slots in the next month for this area.';
-        dateMessageDiv.style.display = 'block';
-        dateSelectContainer.style.display = 'none';
-    } else {
-        // Enable the next button once dates are loaded and a date is selected
-        dateSelect.onchange = () => {
-            nextButton.disabled = !dateSelect.value;
-        };
-    }
-    showLoading(false); // Make sure to hide loading after date calculation
-}
     
-    // ** 3. Submit the booking to the Apps Script **
     async function submitBooking() {
-        const contactName = document.getElementById('contactName').value;
-        const contactNumber = document.getElementById('contactNumber').value;
-        const contactEmail = document.getElementById('contactEmail').value;
-        const siteName = document.getElementById('siteName').value;
-        const address = document.getElementById('address').value;
-        const postcode = document.getElementById('postcode').value;
-        const date = document.getElementById('appointmentDate').value; // YYYY-MM-DD
+        const contactName = document.getElementById('contactName').value.trim();
+        const contactNumber = document.getElementById('contactNumber').value.trim();
+        const contactEmail = document.getElementById('contactEmail').value.trim();
+        const siteName = document.getElementById('siteName').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const postcode = document.getElementById('postcode').value.trim();
+        const date = document.getElementById('appointmentDate').value;
         const timeSlot = document.getElementById('timeSlot').value;
         const location = document.getElementById('location').value;
 
@@ -355,7 +521,7 @@ async function fetchAvailableDates() {
                 Postcode: postcode,
                 Date: date,
                 Time: timeSlot,
-                Engineer: location // Using the location as the Engineer for simple assignment
+                Engineer: location
             }
         };
 
@@ -364,7 +530,7 @@ async function fetchAvailableDates() {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', // Required for Google Apps Script doPost
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(payload)
             });
@@ -374,7 +540,7 @@ async function fetchAvailableDates() {
             
             if (result.success) {
                 document.getElementById('bookingForm').style.display = 'none';
-                displayMessage('success', `✅ Appointment Booked! Your reference is **${result.ref}**. You will receive an email confirmation shortly.`);
+                displayMessage('success', `<strong>✅ Booking Confirmed!</strong><br><br>Your reference number is: <strong>${result.ref}</strong><br><br>You will receive an email confirmation shortly with all the details.`);
             } else {
                 displayMessage('error', 'Booking failed: ' + result.message);
             }
@@ -382,7 +548,7 @@ async function fetchAvailableDates() {
         } catch (error) {
             console.error('Submission error:', error);
             showLoading(false);
-            displayMessage('error', 'An error occurred while submitting your request. Please check your internet connection and try again.');
+            displayMessage('error', 'An error occurred while submitting your booking. Please check your internet connection and try again.');
         }
     }
 </script>
