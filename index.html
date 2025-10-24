@@ -250,15 +250,21 @@
             // Check if the job's Engineer (Column N) matches the selected location
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
                 
-                // Ensure values are treated as strings and padded to 2 digits for consistency.
-                const day = String(job.Day).padStart(2, '0');
-                const month = String(job.Month).padStart(2, '0');
-                const year = String(job.Year);
+                // 🏆 DEFINITIVE FIX: Explicitly convert to number and then pad.
+                // This handles cases where Apps Script might return date values as inconsistent strings.
+                try {
+                    const day = String(Number(job.Day)).padStart(2, '0');
+                    const month = String(Number(job.Month)).padStart(2, '0');
+                    const year = String(Number(job.Year));
 
-                const dateKey = `${year}-${month}-${day}`;
-                
-                // Increment the count for this specific date and location
-                bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+                    const dateKey = `${year}-${month}-${day}`;
+                    
+                    // Increment the count for this specific date and location
+                    bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+                } catch (e) {
+                    console.error("Skipping job due to invalid date data:", job, e);
+                    // This catch block will skip entries where Day, Month, or Year are bad strings/data.
+                }
             }
         });
 
@@ -270,15 +276,15 @@
         let currentDate = getNextAvailableDay(7); // Start 7 days from now
         let datesFound = 0;
 
-        // Check for the next 30 days
-        for (let i = 0; i < 60; i++) { // Loop longer (e.g., 60 days) to ensure we find 30 valid working days
+        // Check for the next 60 days to find 30 working days
+        for (let i = 0; i < 60 && datesFound < 30; i++) { 
             
             const dayOfWeek = currentDate.getDay(); // 0 for Sunday, 6 for Saturday
 
-            // 🛑 NEW CHECK: Skip weekends
+            // 🛑 Exclude weekends
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 currentDate.setDate(currentDate.getDate() + 1); // Move to next day
-                continue; // Skip the rest of the loop for this date
+                continue; 
             }
 
             const dateKey = formatDateForAppsScript(currentDate);
@@ -295,11 +301,6 @@
             }
 
             currentDate.setDate(currentDate.getDate() + 1); // Move to next day
-            
-            // Optional: Break if we've found enough dates
-            if (datesFound >= 30) {
-                break;
-            }
         }
 
         if (datesFound === 0) {
