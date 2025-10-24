@@ -378,7 +378,6 @@
         });
         document.getElementById(`step${step}`).classList.add('active');
         
-        // Update step indicators
         document.getElementById('indicator1').classList.toggle('active', step === 1);
         document.getElementById('indicator2').classList.toggle('active', step === 2);
         
@@ -391,6 +390,7 @@
             const response = await fetch(url);
             if (!response.ok) throw new Error('Network response was not ok');
             const jobs = await response.json();
+            console.log('Fetched jobs:', jobs);
             return jobs;
         } catch (error) {
             console.error('Error fetching jobs:', error);
@@ -416,30 +416,29 @@
         const allJobs = await fetchJobs();
         showLoading(false);
 
-        // FIXED: Count ALL jobs for this location and date, not just web submissions
         const bookingsCount = {};
         
         allJobs.forEach(job => {
-            // Match on Engineer column AND ensure we have valid date components
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
                 try {
-                    // Normalize date components - handle both string and number inputs
                     const day = String(Number(job.Day)).padStart(2, '0');
                     const month = String(Number(job.Month)).padStart(2, '0');
                     const year = String(Number(job.Year));
                     
-                    // Skip invalid dates
                     if (isNaN(day) || isNaN(month) || isNaN(year)) {
                         return;
                     }
 
                     const dateKey = `${year}-${month}-${day}`;
                     bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+                    console.log(`Counted booking for ${location} on ${dateKey}:`, bookingsCount[dateKey]);
                 } catch (e) {
                     console.warn("Skipping job due to unparsable date:", job, e);
                 }
             }
         });
+
+        console.log('Final bookings count:', bookingsCount);
 
         dateSelect.innerHTML = '<option value="" disabled selected>Select a date...</option>';
         availableDates = [];
@@ -451,7 +450,6 @@
         for (let i = 0; i < 60 && datesFound < 30; i++) { 
             const dayOfWeek = currentDate.getDay();
 
-            // Skip weekends
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 currentDate.setDate(currentDate.getDate() + 1);
                 continue; 
@@ -465,14 +463,7 @@
             if (slotsLeft > 0) {
                 const option = document.createElement('option');
                 option.value = dateKey;
-                option.textContent = `${displayDate}`;
-                
-                // Add slots indicator
-                const badge = document.createElement('span');
-                badge.className = 'date-badge';
-                badge.textContent = `${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} left`;
-                
-                option.textContent += ` • ${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} available`;
+                option.textContent = `${displayDate} • ${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} available`;
                 dateSelect.appendChild(option);
                 availableDates.push(dateKey);
                 datesFound++;
@@ -540,7 +531,7 @@
             
             if (result.success) {
                 document.getElementById('bookingForm').style.display = 'none';
-                displayMessage('success', `<strong>✅ Booking Confirmed!</strong><br><br>Your reference number is: <strong>${result.ref}</strong><br><br>You will receive an email confirmation shortly with all the details.`);
+                displayMessage('success', `<strong>✅ Booking Confirmed!</strong><br><br>Your reference number is: <strong>${result.ref}</strong><br><br>A confirmation email has been sent to <strong>${contactEmail}</strong> with all the details.`);
             } else {
                 displayMessage('error', 'Booking failed: ' + result.message);
             }
