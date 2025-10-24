@@ -226,95 +226,104 @@
     }
 
     // ** 2. Determine available dates for the selected location **
-    async function fetchAvailableDates() {
-        const location = document.getElementById('location').value;
-        const dateSelectContainer = document.getElementById('dateSelectContainer');
-        const dateSelect = document.getElementById('appointmentDate');
-        const dateMessageDiv = document.getElementById('dateMessage');
-        const nextButton = document.getElementById('nextStep2');
-        
-        // Reset state
-        dateSelect.innerHTML = '<option value="" disabled selected>-- Loading dates... --</option>';
-        dateSelectContainer.style.display = 'block';
-        dateMessageDiv.style.display = 'none';
-        nextButton.disabled = true;
+    // ** 2. Determine available dates for the selected location **
+async function fetchAvailableDates() {
+    const location = document.getElementById('location').value;
+    const dateSelectContainer = document.getElementById('dateSelectContainer');
+    const dateSelect = document.getElementById('appointmentDate');
+    const dateMessageDiv = document.getElementById('dateMessage');
+    const nextButton = document.getElementById('nextStep2');
+    
+    // Reset state
+    dateSelect.innerHTML = '<option value="" disabled selected>-- Loading dates... --</option>';
+    dateSelectContainer.style.display = 'block';
+    dateMessageDiv.style.display = 'none';
+    nextButton.disabled = true;
 
-        if (!location) return;
+    if (!location) return;
 
-        const allJobs = await fetchJobs();
+    const allJobs = await fetchJobs();
 
-        // Object to hold counts: { 'YYYY-MM-DD': count }
-        const bookingsCount = {};
-        
-        allJobs.forEach(job => {
-            // Check if the job's Engineer (Column N) matches the selected location
-            if (job.Engineer === location && job.Day && job.Month && job.Year) {
-                
-                // 🏆 DEFINITIVE FIX: Explicitly convert to number and then pad.
-                // This handles cases where Apps Script might return date values as inconsistent strings.
-                try {
-                    const day = String(Number(job.Day)).padStart(2, '0');
-                    const month = String(Number(job.Month)).padStart(2, '0');
-                    const year = String(Number(job.Year));
-
-                    const dateKey = `${year}-${month}-${day}`;
-                    
-                    // Increment the count for this specific date and location
-                    bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
-                } catch (e) {
-                    console.error("Skipping job due to invalid date data:", job, e);
-                    // This catch block will skip entries where Day, Month, or Year are bad strings/data.
-                }
-            }
-        });
-
-        // Clear existing options
-        dateSelect.innerHTML = '<option value="" disabled selected>-- Select Date --</option>';
-        availableDates = [];
-
-        const maxBookingsPerDay = 5;
-        let currentDate = getNextAvailableDay(7); // Start 7 days from now
-        let datesFound = 0;
-
-        // Check for the next 60 days to find 30 working days
-        for (let i = 0; i < 60 && datesFound < 30; i++) { 
+    // Object to hold counts: { 'YYYY-MM-DD': count }
+    const bookingsCount = {};
+    
+    allJobs.forEach(job => {
+        // Check if the job's Engineer (Column N) matches the selected location
+        if (job.Engineer === location && job.Day && job.Month && job.Year) {
             
-            const dayOfWeek = currentDate.getDay(); // 0 for Sunday, 6 for Saturday
+            // 🏆 FINAL FIX: Use Number() to convert job date parts, then re-format (pad) 
+            // them to create a consistent YYYY-MM-DD key. This ensures single-digit 
+            // numbers (like 5) are treated as 05 for the key.
+            try {
+                // Convert to Number, then pad the string representation
+                const day = String(Number(job.Day)).padStart(2, '0');
+                const month = String(Number(job.Month)).padStart(2, '0');
+                const year = String(Number(job.Year));
 
-            // 🛑 Exclude weekends
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                currentDate.setDate(currentDate.getDate() + 1); // Move to next day
-                continue; 
+                // The dateKey MUST be padded for consistency with formatDateForAppsScript
+                const dateKey = `${year}-${month}-${day}`;
+                
+                // Increment the count for this specific date and location
+                bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+
+            } catch (e) {
+                // Skips jobs if date components are truly unparsable (e.g., "N/A")
+                console.warn("Skipping job due to unparsable date component:", job, e);
             }
+        }
+    });
 
-            const dateKey = formatDateForAppsScript(currentDate);
-            const displayDate = formatDisplayDate(currentDate);
-            const count = bookingsCount[dateKey] || 0;
+    // ... (rest of the date generation logic remains the same) ...
+    // The rest of the logic generates dates in the YYYY-MM-DD format, which will now match
+    // the dateKey created above, regardless of the original format in the sheet.
+    
+    // Clear existing options
+    dateSelect.innerHTML = '<option value="" disabled selected>-- Select Date --</option>';
+    availableDates = [];
 
-            if (count < maxBookingsPerDay) {
-                const option = document.createElement('option');
-                option.value = dateKey;
-                option.textContent = `${displayDate} (${maxBookingsPerDay - count} slots left)`;
-                dateSelect.appendChild(option);
-                availableDates.push(dateKey);
-                datesFound++;
-            }
+    const maxBookingsPerDay = 5;
+    let currentDate = getNextAvailableDay(7); // Start 7 days from now
+    let datesFound = 0;
 
+    // Check for the next 60 days to find 30 working days
+    for (let i = 0; i < 60 && datesFound < 30; i++) { 
+        
+        const dayOfWeek = currentDate.getDay(); // 0 for Sunday, 6 for Saturday
+
+        // 🛑 Exclude weekends
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
             currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+            continue; 
         }
 
-        if (datesFound === 0) {
-            dateMessageDiv.textContent = 'Sorry, there are no available slots in the next month for this area.';
-            dateMessageDiv.style.display = 'block';
-            dateSelectContainer.style.display = 'none';
-        } else {
-            // Enable the next button once dates are loaded and a date is selected
-            dateSelect.onchange = () => {
-                nextButton.disabled = !dateSelect.value;
-            };
+        const dateKey = formatDateForAppsScript(currentDate); // Creates YYYY-MM-DD
+        const displayDate = formatDisplayDate(currentDate);
+        const count = bookingsCount[dateKey] || 0;
+
+        if (count < maxBookingsPerDay) {
+            const option = document.createElement('option');
+            option.value = dateKey;
+            option.textContent = `${displayDate} (${maxBookingsPerDay - count} slots left)`;
+            dateSelect.appendChild(option);
+            availableDates.push(dateKey);
+            datesFound++;
         }
-        showLoading(false); // Make sure to hide loading after date calculation
+
+        currentDate.setDate(currentDate.getDate() + 1); // Move to next day
     }
+
+    if (datesFound === 0) {
+        dateMessageDiv.textContent = 'Sorry, there are no available slots in the next month for this area.';
+        dateMessageDiv.style.display = 'block';
+        dateSelectContainer.style.display = 'none';
+    } else {
+        // Enable the next button once dates are loaded and a date is selected
+        dateSelect.onchange = () => {
+            nextButton.disabled = !dateSelect.value;
+        };
+    }
+    showLoading(false); // Make sure to hide loading after date calculation
+}
     
     // ** 3. Submit the booking to the Apps Script **
     async function submitBooking() {
