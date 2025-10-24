@@ -251,17 +251,15 @@
             // and if the date components are valid (Columns J, K, L)
             if (job.Engineer === location && job.Day && job.Month && job.Year) {
                 
-                // CRITICAL FIX: Google Sheets month number (1-12) must be adjusted for 
-                // JavaScript's zero-indexed Date object (0-11).
-                const jsMonth = Number(job.Month) - 1; 
-
-                // Create a clean Date object for reliable formatting
-                const jobDate = new Date(Number(job.Year), jsMonth, Number(job.Day));
+                // CRITICAL FIX: The Google Sheet month number (1-12) MUST be adjusted for 
+                // JavaScript's zero-indexed Date object (0-11) when creating a Date object.
+                // However, since we are just trying to build a consistent KEY, 
+                // we can just pad the numbers to ensure the format is YYYY-MM-DD.
                 
-                // Format the Date object into the consistent YYYY-MM-DD string key
-                const year = jobDate.getFullYear();
-                const month = String(jobDate.getMonth() + 1).padStart(2, '0');
-                const day = String(jobDate.getDate()).padStart(2, '0');
+                // Ensure values are treated as numbers, then pad them to 2 digits
+                const day = String(job.Day).padStart(2, '0');
+                const month = String(job.Month).padStart(2, '0');
+                const year = String(job.Year);
 
                 const dateKey = `${year}-${month}-${day}`;
                 
