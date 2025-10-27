@@ -240,17 +240,6 @@
             font-style: italic;
         }
 
-        .debug-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            font-size: 0.8em;
-            color: #666;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
         @media (max-width: 600px) {
             .container {
                 padding: 25px;
@@ -297,7 +286,6 @@
                 <p class="info-text">Showing weekdays only, starting 7 days from today</p>
             </div>
 
-            <div id="debugInfo" class="debug-info" style="display:none;"></div>
             <div id="dateMessage" class="message error" style="display:none;"></div>
             <button onclick="nextStep(2)" id="nextStep2" disabled>Continue to Details →</button>
         </div>
@@ -402,10 +390,8 @@
             const response = await fetch(url);
             if (!response.ok) throw new Error('Network response was not ok');
             const jobs = await response.json();
-            console.log('Fetched jobs:', jobs);
             return jobs;
         } catch (error) {
-            console.error('Error fetching jobs:', error);
             return [];
         }
     }
@@ -416,13 +402,11 @@
         const dateSelect = document.getElementById('appointmentDate');
         const dateMessageDiv = document.getElementById('dateMessage');
         const nextButton = document.getElementById('nextStep2');
-        const debugInfo = document.getElementById('debugInfo');
         
         dateSelect.innerHTML = '<option value="" disabled selected>Loading available dates...</option>';
         dateSelectContainer.style.display = 'block';
         dateMessageDiv.style.display = 'none';
         nextButton.disabled = true;
-        debugInfo.style.display = 'none';
 
         if (!location) return;
 
@@ -430,60 +414,26 @@
         const allJobs = await fetchJobs();
         showLoading(false);
 
-        // DEBUG: Show sample job data
-        let debugHTML = `<strong>DEBUG INFO:</strong><br>`;
-        debugHTML += `Total jobs fetched: ${allJobs.length}<br>`;
-        debugHTML += `Selected location: ${location}<br><br>`;
-        
-        if (allJobs.length > 0) {
-            debugHTML += `Sample job data:<br>`;
-            const sampleJob = allJobs[0];
-            debugHTML += `- Engineer: "${sampleJob.Engineer}"<br>`;
-            debugHTML += `- Day: ${sampleJob.Day}<br>`;
-            debugHTML += `- Month: ${sampleJob.Month}<br>`;
-            debugHTML += `- Year: ${sampleJob.Year}<br><br>`;
-            
-            // Show all unique Engineer values
-            const uniqueEngineers = [...new Set(allJobs.map(j => j.Engineer).filter(e => e))];
-            debugHTML += `Unique Engineer values found: ${uniqueEngineers.join(', ')}<br><br>`;
-        }
-
         const bookingsCount = {};
-        let matchedJobs = 0;
         
         allJobs.forEach(job => {
-            // DEBUG: Check what we're comparing
-            if (job.Engineer) {
-                const matches = job.Engineer === location;
-                console.log(`Comparing: "${job.Engineer}" === "${location}" = ${matches}`);
-                
-                if (matches && job.Day && job.Month && job.Year) {
-                    matchedJobs++;
-                    try {
-                        const day = String(Number(job.Day)).padStart(2, '0');
-                        const month = String(Number(job.Month)).padStart(2, '0');
-                        const year = String(Number(job.Year));
-                        
-                        if (isNaN(day) || isNaN(month) || isNaN(year)) {
-                            return;
-                        }
-
-                        const dateKey = `${year}-${month}-${day}`;
-                        bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
-                        console.log(`Counted booking for ${location} on ${dateKey}:`, bookingsCount[dateKey]);
-                    } catch (e) {
-                        console.warn("Skipping job due to unparsable date:", job, e);
+            if (job.Engineer === location && job.Day && job.Month && job.Year) {
+                try {
+                    const day = String(Number(job.Day)).padStart(2, '0');
+                    const month = String(Number(job.Month)).padStart(2, '0');
+                    const year = String(Number(job.Year));
+                    
+                    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+                        return;
                     }
+
+                    const dateKey = `${year}-${month}-${day}`;
+                    bookingsCount[dateKey] = (bookingsCount[dateKey] || 0) + 1;
+                } catch (e) {
+                    // Skip invalid dates
                 }
             }
         });
-
-        debugHTML += `Jobs matching "${location}": ${matchedJobs}<br>`;
-        debugHTML += `Dates with bookings: ${JSON.stringify(bookingsCount)}<br>`;
-        debugInfo.innerHTML = debugHTML;
-        debugInfo.style.display = 'block';
-
-        console.log('Final bookings count:', bookingsCount);
 
         dateSelect.innerHTML = '<option value="" disabled selected>Select a date...</option>';
         availableDates = [];
@@ -582,7 +532,6 @@
             }
 
         } catch (error) {
-            console.error('Submission error:', error);
             showLoading(false);
             displayMessage('error', 'An error occurred while submitting your booking. Please check your internet connection and try again.');
         }
