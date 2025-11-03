@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Your Appointment</title>
+    <title>Tesla Energy - Book Your Appointment</title>
     <style>
         * {
             margin: 0;
@@ -12,23 +12,24 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #f5f5f5;
         }
 
         .container {
             max-width: 600px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(232, 33, 39, 0.3);
             animation: slideUp 0.5s ease-out;
         }
 
@@ -43,8 +44,29 @@
             }
         }
 
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
         h1 {
-            color: #667eea;
+            background: linear-gradient(135deg, #E82127 0%, #cc1d22 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-align: center;
             margin-bottom: 10px;
             font-size: 2em;
@@ -53,7 +75,7 @@
 
         .subtitle {
             text-align: center;
-            color: #666;
+            color: #888;
             margin-bottom: 30px;
             font-size: 0.95em;
         }
@@ -70,52 +92,53 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #ddd;
+            background: #3a3a3a;
             transition: all 0.3s ease;
         }
 
         .step-dot.active {
-            background: #667eea;
+            background: #E82127;
             transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(232, 33, 39, 0.5);
         }
 
         .step-line {
             width: 40px;
             height: 2px;
-            background: #ddd;
+            background: #3a3a3a;
         }
 
         label {
             display: block;
             margin: 20px 0 8px;
             font-weight: 600;
-            color: #333;
+            color: #d0d0d0;
             font-size: 0.95em;
         }
 
         select, input[type="text"], input[type="email"], input[type="tel"] {
             width: 100%;
             padding: 14px 16px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #3a3a3a;
             border-radius: 10px;
             font-size: 15px;
             transition: all 0.3s ease;
-            background: white;
-            color: #333;
+            background: #2a2a2a;
+            color: #f5f5f5;
         }
 
         select:focus, input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #E82127;
+            box-shadow: 0 0 0 3px rgba(232, 33, 39, 0.2);
         }
 
         select:hover, input:hover {
-            border-color: #667eea;
+            border-color: #E82127;
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #E82127 0%, #b81920 100%);
             color: white;
             padding: 16px 24px;
             border: none;
@@ -126,12 +149,12 @@
             font-weight: 600;
             margin-top: 25px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(232, 33, 39, 0.4);
         }
 
         button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgba(232, 33, 39, 0.6);
         }
 
         button:active:not(:disabled) {
@@ -185,15 +208,15 @@
         }
 
         .message.error {
-            background-color: #fee;
-            color: #c33;
-            border: 2px solid #fcc;
+            background-color: rgba(232, 33, 39, 0.15);
+            color: #ff6b6b;
+            border: 2px solid rgba(232, 33, 39, 0.3);
         }
 
         .message.success {
-            background-color: #efe;
-            color: #2a6d2a;
-            border: 2px solid #cec;
+            background-color: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            border: 2px solid rgba(0, 184, 148, 0.3);
         }
 
         .loading {
@@ -203,8 +226,8 @@
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid #2a2a2a;
+            border-top: 4px solid #E82127;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -218,14 +241,14 @@
         }
 
         .loading-text {
-            color: #667eea;
+            color: #E82127;
             font-weight: 600;
         }
 
         .date-badge {
             display: inline-block;
-            background: #f0f4ff;
-            color: #667eea;
+            background: rgba(232, 33, 39, 0.15);
+            color: #E82127;
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 0.85em;
@@ -235,7 +258,7 @@
 
         .info-text {
             font-size: 0.9em;
-            color: #666;
+            color: #888;
             margin-top: 8px;
             font-style: italic;
         }
@@ -248,14 +271,24 @@
             h1 {
                 font-size: 1.6em;
             }
+
+            .logo {
+                height: 30px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📅 Book Your Appointment</h1>
-    <p class="subtitle">Schedule your service in just a few steps</p>
+    <div class="header-section">
+        <div class="logo-container">
+            <img src="https://www.dropbox.com/scl/fi/4eilt1ka4obatkaif4ksg/Screenshot-2025-06-11-132304.png?rlkey=1puz3m5i205n2t4q9n6srfq56&st=00ujjvmz&dl=1" alt="Company Logo" class="logo">
+            <img src="https://www.dropbox.com/scl/fi/anarupfj9dj1hio0jnaze/Tesla.jpeg?rlkey=4yt78cnnf5vdtsqaywslfvaxu&st=x6irb6p7&dl=1" alt="Tesla Logo" class="logo">
+        </div>
+        <h1>Book Your Appointment</h1>
+        <p class="subtitle">Schedule your Tesla Energy service in just a few steps</p>
+    </div>
 
     <div class="step-indicator">
         <div class="step-dot active" id="indicator1"></div>
